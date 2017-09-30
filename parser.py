@@ -105,6 +105,8 @@ def parseCategories(text):
     global currentProduct
     global categories
 
+    lastCategoryId = None
+
     categoriesAphex = text.split('|')
 
     for cat in range(1, len(categoriesAphex)):
@@ -112,19 +114,24 @@ def parseCategories(text):
         indexLB = curCat.index('[')
         indexRB = curCat.index(']')
 
-        aphex = (curCat[0:indexLB] , curCat[indexLB+1:len(curCat)-1])
+        aphex = (curCat[0:indexLB], curCat[indexLB + 1:len(curCat) - 1])
         currentCategory = categories.get(aphex[1], None)
+        
+        
 
-        if currentCategory != None:
-            categoryObject = Beans.ProductCategories()
-            categoryObject.productId = currentProduct.id
-            categoryObject.categoryId = currentCategory.id
-        else:
+        if currentCategory == None:
             newCategory = Beans.Category()
-            newCategory.description = aphex[0]
+            newCategory.superCategory = lastCategoryId
             newCategory.id = aphex[1]
+            newCategory.description = aphex[0]
             categories[newCategory.id] = newCategory
+        
+        lastCategoryId = aphex[1]
 
+    categoryObject = Beans.ProductCategories()
+    categoryObject.productId = currentProduct.id
+    categoryObject.categoryId = lastCategoryId
+    productsCategories.append(categoryObject)
 
 
 parse = {
@@ -143,7 +150,11 @@ parse = {
 with open('./docs/simpletest.txt') as f:
     for line in f:
 
-        rawString = line.strip().split(':', 1)
+        if line[0: 3] != '   ':
+            rawString = line.strip().split(':', 1)
+        else:
+            rawString = line.strip().split("\n")
+
         curContext = switcher.get(rawString[0], Context.NONE)
 
         if curContext != Context.NONE:
@@ -166,6 +177,7 @@ with open('./docs/simpletest.txt') as f:
             currentProduct = Beans.Product()
             parseId(rawString[1].strip())
 
+
 if currentProduct != None:
     products.append(currentProduct)
 
@@ -183,4 +195,8 @@ for sim in similarProducts:
 
 print "\nCategories : "
 for cat in categories:
-    print cat, ' - ' , categories[cat].description
+    print cat, ' - ', categories[cat].description
+
+print "\nSubCategories : "
+for subc in productsCategories:
+    print subc.productId, ' - ', subc.categoryId

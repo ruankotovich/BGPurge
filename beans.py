@@ -23,6 +23,7 @@ class Group:
 
 class Category:
     id = None  # pk
+    superCategory = None # fk_category
     description = None  # df this->id
 
 
