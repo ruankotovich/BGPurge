@@ -7,8 +7,8 @@ class Product:
 
 
 class SimilarProducts:
-    mainProductId = None  # pk #fk_product
-    similarProductId = None  # pk #fk_product
+    mainProductAsin = None  # pk #fk_product
+    similarProductAsin = None  # pk #fk_product
 
 
 class ProductCategories:
