@@ -210,6 +210,10 @@ class Dataparser:
 
                     self.currentProduct = Beans.Product()
                     self.parseId(rawString[1].strip())
+
+            if self.currentProduct != None:
+                self.products.append(self.currentProduct)
+
         print "Dumping the last records..."
         for p in self.products:
             factory.insertProduct(p)
