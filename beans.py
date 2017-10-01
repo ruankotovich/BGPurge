@@ -11,12 +11,12 @@ class SimilarProducts:
     similarProductAsin = None  # pk #fk_product
 
 
-class ProductCategories:
+class ProductCategory:
     productId = None  # pk #fk_product
     categoryId = None  # pk #fk_category
 
 
-class Group:
+class PGroup:
     id = None  # pk
     description = None  # df this->id
 

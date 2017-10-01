@@ -72,7 +72,7 @@ def parseGroup(text):
         currentProduct.groupId = currentGroup.id
     else:
         currentGroupIndex += 1
-        curGroup = groups[text] = Beans.Group()
+        curGroup = groups[text] = Beans.PGroup()
         curGroup.id = currentProduct.groupId = currentGroupIndex
         curGroup.description = text
 
@@ -126,7 +126,7 @@ def parseCategories(text):
 
         lastCategoryId = aphex[1]
 
-    categoryObject = Beans.ProductCategories()
+    categoryObject = Beans.ProductCategory()
     categoryObject.productId = currentProduct.id
     categoryObject.categoryId = lastCategoryId
     productsCategories.append(categoryObject)
