@@ -71,7 +71,7 @@ class SchemaFactory():
 
 
 factory = SchemaFactory()
-factory.createSchema()
+# factory.createSchema()
 factory.dataparser.parseFile(sys.argv[5], factory)
 factory.purgeDatabase()
 factory.commit()

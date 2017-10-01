@@ -15,16 +15,17 @@ create table Product(
 );
 
 create table SimilarProducts(
-    sim_pro_asin varchar(30) not null,
+	sim_pro_surrogate_id serial not null,
+    sim_pro_asin varchar(30) unique not null ,
     sim_pro_sim_asin varchar(30) not null,
-    primary key(sim_pro_asin, sim_pro_sim_asin)
+    primary key(sim_pro_surrogate_id)
 --    foreign key(sim_pro_asin) references product(pro_asin),
 --    foreign key(sim_pro_sim_asin) references product(pro_asin)
 );
 
 create table PGroup(
 	gro_id int not null unique,
-	gro_description varchar(40),
+	gro_description varchar(100),
 	primary key(gro_id)
 );
 
@@ -33,7 +34,7 @@ create table Category(
 	cat_description varchar(30),
 	cat_super_cat_id int default null,
 	primary key(cat_id),
-    foreign key(cat_super_cat_id) references category(cat_id)
+    -- foreign key(cat_super_cat_id) references category(cat_id)
 );
 
 create table ProductCategory(
