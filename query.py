@@ -27,13 +27,13 @@ create table SimilarProducts(
 
 create table PGroup(
 	gro_id int not null unique,
-	gro_description varchar(40),
+	gro_description varchar(100),
 	primary key(gro_id)
 );
 
 create table Category(
 	cat_id int not null unique,
-	cat_description varchar(50),
+	cat_description varchar(150),
 	cat_super_cat_id int default null,
 	primary key(cat_id)
 --    foreign key(cat_super_cat_id) references category(cat_id)

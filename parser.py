@@ -187,8 +187,9 @@ class Dataparser:
                     if self.currentProduct != None:
                         self.products.append(self.currentProduct)
                         processed += 1
-
-                        if processed % 6000 == 0:
+                        if processed % 5000 == 0:
+                            print "Processed in memory ", processed, " instanzas."
+                        if processed % 50000 == 0:
                             print "Dumping..."
                             for p in self.products:
                                 factory.insertProduct(p)
@@ -205,7 +206,7 @@ class Dataparser:
                             self.reviews = []
                             self.productsCategories = []
 
-                            print "Processed ", processed, " instanzas."
+                            print "Processed in disk", processed, " instanzas."
 
                     self.currentProduct = Beans.Product()
                     self.parseId(rawString[1].strip())
@@ -229,7 +230,7 @@ class Dataparser:
         self.similarProducts = []
         self.reviews = []
         self.productsCategories = []
-        print "Processed ", processed, " instanzas finally."
+        print "Processed in disk", processed, " instanzas finally."
 
         if self.currentProduct != None:
             self.products.append(self.currentProduct)
