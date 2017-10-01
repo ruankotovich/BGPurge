@@ -3,9 +3,12 @@ class Query():
     ADD_CATEGORY_FOREIGN_KEY = """alter table category add constraint fk_cat_super_cat foreign key(cat_super_cat_id) references category(cat_id);"""
     ADD_REVIEW_FOREIGN_KEY = """alter table review add constraint fk_rev_pro foreign key(rev_pro_id) references Product(pro_id);"""
     ADD_PROCAT_FOREIGN_KEY = """alter table productcategory add constraint fk_procat_cat_id foreign key(pro_cat_cat_id) references category(cat_id),add constraint fk_procat_pro_id foreign key(pro_cat_pro_id) references product(pro_id);"""
+    REMOVE_UNUSED_SIMILARS = """delete from similarproducts where sim_pro_surrogate_id in (select sim_pro_surrogate_id from product p1 join similarproducts on p1.pro_asin = sim_pro_asin left join product p2 on p2.pro_asin = sim_pro_sim_asin where p2.pro_asin is null);"""
+    ADD_PROSIM_FOREIGN_KEY = """alter table similarproducts add constraint fk_simpro_pro_asin foreign key(sim_pro_asin) references product(pro_asin), add constraint fk_simpro_pro_sim_asin foreign key(sim_pro_sim_asin) references product(pro_asin);"""
 
     SELECT_A = """(select * from review where rev_pro_id = %d order by rev_rating desc, rev_helpful desc limit 5) union all (select * from review where rev_pro_id = %d order by rev_rating, rev_helpful desc limit 5);"""
     SELECT_B = """select * from product p, similarproducts, product p2 where p.pro_asin = sim_pro_asin and p2.pro_asin = sim_pro_sim_asin and p.pro_salesrank <= p2.pro_salesrank and p.pro_id = %d;"""
+    # select * from product, pgroup where pro_groupid = X and pro_groupid = gro_id order by pro_salesrank desc limit 10
 
     CREATE_SCHEMA_SQL = """
 drop table if exists review;
@@ -25,9 +28,10 @@ create table Product(
 );
 
 create table SimilarProducts(
+    sim_pro_surrogate_id serial not null,
     sim_pro_asin varchar(30) not null,
     sim_pro_sim_asin varchar(30) not null,
-    primary key(sim_pro_asin, sim_pro_sim_asin)
+    primary key(sim_pro_surrogate_id)
 --    foreign key(sim_pro_asin) references product(pro_asin),
 --    foreign key(sim_pro_sim_asin) references product(pro_asin)
 );

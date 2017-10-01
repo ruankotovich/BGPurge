@@ -12,6 +12,13 @@ class SchemaFactory():
         host=sys.argv[1], database=sys.argv[4], user=sys.argv[2], password=sys.argv[3])
     cur = con.cursor()
 
+    def purgeDatabase(self):
+        self.cur.execute(Query.ADD_CATEGORY_FOREIGN_KEY)
+        self.cur.execute(Query.ADD_REVIEW_FOREIGN_KEY)
+        self.cur.execute(Query.ADD_PROCAT_FOREIGN_KEY)
+        self.cur.execute(Query.REMOVE_UNUSED_SIMILARS)
+        self.cur.execute(Query.ADD_PROSIM_FOREIGN_KEY)
+
     def createSchema(self):
         self.cur.execute(Query.CREATE_SCHEMA_SQL)
 
@@ -61,6 +68,7 @@ class SchemaFactory():
 factory = SchemaFactory()
 # factory.createSchema()
 factory.dataparser.parseFile(sys.argv[5], factory)
+factory.purgeDatabase()
 # factory.commit()
 factory.closeConnection()
 

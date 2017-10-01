@@ -116,11 +116,9 @@ class Dataparser:
                 newCategory.id = aphex[1]
                 newCategory.description = aphex[0]
                 self.categories[newCategory.id] = newCategory
-                
+
             lastCategoryId = aphex[1]
-        
-        if lastCategoryId.find('8') >= 0:
-            print text
+
         categoryObject = Beans.ProductCategory()
         categoryObject.productId = self.currentProduct.id
         categoryObject.categoryId = lastCategoryId
@@ -193,16 +191,16 @@ class Dataparser:
                             print "Processed in memory ", processed, " instanzas."
                         if processed % 50000 == 0:
                             print "Dumping..."
-                            # for p in self.products:
-                            #     factory.insertProduct(p)
-                            # for sp in self.similarProducts:
-                            #     factory.insertSimilar(sp)
-                            # for r in self.reviews:
-                            #     factory.insertReview(r)
-                            # for cat in self.productsCategories:
-                            #     factory.insertProCategory(cat)
+                            for p in self.products:
+                                factory.insertProduct(p)
+                            for sp in self.similarProducts:
+                                factory.insertSimilar(sp)
+                            for r in self.reviews:
+                                factory.insertReview(r)
+                            for cat in self.productsCategories:
+                                factory.insertProCategory(cat)
 
-                            # factory.commit()
+                            factory.commit()
                             self.products = []
                             self.similarProducts = []
                             self.reviews = []
@@ -217,20 +215,20 @@ class Dataparser:
                 self.products.append(self.currentProduct)
 
         print "Dumping the last records..."
-        # for p in self.products:
-        #     factory.insertProduct(p)
-        # for sp in self.similarProducts:
-        #     factory.insertSimilar(sp)
-        # for r in self.reviews:
-        #     factory.insertReview(r)
-        # for cat in self.productsCategories:
-        #     factory.insertProCategory(cat)
-        # for key, group in self.groups.iteritems():
-        #     factory.insertGroup(group)
-        # for key, category in self.categories.iteritems():
-        #     factory.insertCategory(category)
+        for p in self.products:
+            factory.insertProduct(p)
+        for sp in self.similarProducts:
+            factory.insertSimilar(sp)
+        for r in self.reviews:
+            factory.insertReview(r)
+        for cat in self.productsCategories:
+            factory.insertProCategory(cat)
+        for key, group in self.groups.iteritems():
+            factory.insertGroup(group)
+        for key, category in self.categories.iteritems():
+            factory.insertCategory(category)
 
-        # factory.commit()
+        factory.commit()
 
         self.products = []
         self.similarProducts = []
