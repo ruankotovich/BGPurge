@@ -35,7 +35,8 @@ create table Category(
 	cat_id int not null unique,
 	cat_description varchar(30),
 	cat_super_cat_id int default null,
-	primary key(cat_id)
+	primary key(cat_id),
+    foreign key(cat_super_cat_id) references category(cat_id)
 );
 
 create table ProductCategory(

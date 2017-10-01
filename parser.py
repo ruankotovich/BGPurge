@@ -2,7 +2,6 @@ import re
 import beans as Beans
 from enum import Enum
 
-
 class Context(Enum):
     NONE = 0,
     ID = 1,
