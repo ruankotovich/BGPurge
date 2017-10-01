@@ -12,6 +12,18 @@ class SchemaFactory():
         host=sys.argv[1], database=sys.argv[4], user=sys.argv[2], password=sys.argv[3])
     cur = con.cursor()
 
+    def purgeDatabase(self):
+        print "Adding category foreign keys..."
+        self.cur.execute(Query.ADD_CATEGORY_FOREIGN_KEY)
+        print "Adding review foreign keys..."
+        self.cur.execute(Query.ADD_REVIEW_FOREIGN_KEY)
+        print "Adding procat foreign keys..."
+        self.cur.execute(Query.ADD_PROCAT_FOREIGN_KEY)
+        print "Removing unused products..."
+        self.cur.execute(Query.REMOVE_UNUSED_SIMILARS)
+        print "Adding prosim foreign keys..."
+        self.cur.execute(Query.ADD_PROSIM_FOREIGN_KEY)
+
     def createSchema(self):
         self.cur.execute(Query.CREATE_SCHEMA_SQL)
 
@@ -31,7 +43,7 @@ class SchemaFactory():
         self.cur.execute(sql)
 
     def insertProCategory(self, pCategory):
-        sql = "insert into ProductCategory(pro_cat_cat_id, pro_cat_pro_id) values (%d, %d)" % (
+        sql = "insert into ProductCategory(pro_cat_pro_id,pro_cat_cat_id) values (%d, %d)" % (
             int(pCategory.productId), int(pCategory.categoryId))
         self.cur.execute(sql)
 
@@ -61,7 +73,8 @@ class SchemaFactory():
 factory = SchemaFactory()
 factory.createSchema()
 factory.dataparser.parseFile(sys.argv[5], factory)
-# factory.commit()
+factory.purgeDatabase()
+factory.commit()
 factory.closeConnection()
 
 
