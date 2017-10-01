@@ -31,7 +31,7 @@ class SchemaFactory():
         self.cur.execute(sql)
 
     def insertProCategory(self, pCategory):
-        sql = "insert into ProductCategory(pro_cat_cat_id, pro_cat_pro_id) values (%d, %d)" % (
+        sql = "insert into ProductCategory(pro_cat_pro_id,pro_cat_cat_id) values (%d, %d)" % (
             int(pCategory.productId), int(pCategory.categoryId))
         self.cur.execute(sql)
 
@@ -59,7 +59,7 @@ class SchemaFactory():
 
 
 factory = SchemaFactory()
-factory.createSchema()
+# factory.createSchema()
 factory.dataparser.parseFile(sys.argv[5], factory)
 # factory.commit()
 factory.closeConnection()

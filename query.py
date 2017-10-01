@@ -2,6 +2,7 @@ class Query():
 
     ADD_CATEGORY_FOREIGN_KEY = """alter table category add constraint fk_cat_super_cat foreign key(cat_super_cat_id) references category(cat_id);"""
     ADD_REVIEW_FOREIGN_KEY = """alter table review add constraint fk_rev_pro foreign key(rev_pro_id) references Product(pro_id);"""
+    ADD_PROCAT_FOREIGN_KEY = """alter table productcategory add constraint fk_procat_cat_id foreign key(pro_cat_cat_id) references category(cat_id),add constraint fk_procat_pro_id foreign key(pro_cat_pro_id) references product(pro_id);"""
 
     SELECT_A = """(select * from review where rev_pro_id = %d order by rev_rating desc, rev_helpful desc limit 5) union all (select * from review where rev_pro_id = %d order by rev_rating, rev_helpful desc limit 5);"""
     SELECT_B = """select * from product p, similarproducts, product p2 where p.pro_asin = sim_pro_asin and p2.pro_asin = sim_pro_sim_asin and p.pro_salesrank <= p2.pro_salesrank and p.pro_id = %d;"""
