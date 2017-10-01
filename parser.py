@@ -16,215 +16,220 @@ class Context(Enum):
     PURGED = 10
 
 
-products = []
-similarProducts = []
-productsCategories = []
-groups = {}
-categories = {}
-reviews = []
+class Dataparser:
+    products = []
+    similarProducts = []
+    productsCategories = []
+    groups = {}
+    categories = {}
+    reviews = []
 
+    currentGroupIndex = 0
+    currentProduct = None
 
-switcher = {
-    'Id': Context.ID,
-    'ASIN': Context.ASIN,
-    'title': Context.TITLE,
-    'group': Context.GROUP,
-    'salesrank': Context.SALESRANK,
-    'similar': Context.SIMILAR,
-    'categories': Context.CATEGORIES,
-    'reviews': Context.REVIEWS,
-    'discontinued product': Context.PURGED,
-    '': Context.NONE
-}
+    switcher = {
+        'Id': Context.ID,
+        'ASIN': Context.ASIN,
+        'title': Context.TITLE,
+        'group': Context.GROUP,
+        'salesrank': Context.SALESRANK,
+        'similar': Context.SIMILAR,
+        'categories': Context.CATEGORIES,
+        'reviews': Context.REVIEWS,
+        'discontinued product': Context.PURGED,
+        '': Context.NONE
+    }
 
-currentGroupIndex = 0
-currentProduct = None
-lastUpperContext = Context.NONE
+    def parseId(self, text):
 
+        # global currentProduct
 
-def parseId(text):
+        self.currentProduct.id = int(text)
 
-    global currentProduct
+    def parseASIN(self, text):
 
-    currentProduct.id = int(text)
+        # global currentProduct
 
+        self.currentProduct.asin = text
 
-def parseASIN(text):
+    def parseTitle(self, text):
 
-    global currentProduct
+        # global currentProduct
 
-    currentProduct.asin = text
+        self.currentProduct.title = text
 
+    def parseGroup(self, text):
 
-def parseTitle(text):
+        # global currentGroup
+        # global currentGroupIndex
 
-    global currentProduct
-
-    currentProduct.title = text
-
-
-def parseGroup(text):
-
-    global currentGroup
-    global currentGroupIndex
-    currentGroup = groups.get(text, None)
-    if currentGroup != None:
-        currentProduct.groupId = currentGroup.id
-    else:
-        currentGroupIndex += 1
-        curGroup = groups[text] = Beans.PGroup()
-        curGroup.id = currentProduct.groupId = currentGroupIndex
-        curGroup.description = text
-
-
-def parseSalesRank(text):
-
-    global currentProduct
-
-    currentProduct.salesrank = int(text)
-
-
-def parseSimilar(text):
-
-    global currentProduct
-    global similarProducts
-
-    pieces = text.split('  ')
-
-    for i in range(1, len(pieces)):
-        similarObject = Beans.SimilarProducts()
-        similarObject.mainProductAsin = currentProduct.asin
-        similarObject.similarProductAsin = pieces[i]
-        similarProducts.append(similarObject)
-
-
-def parseCategories(text):
-    if len(text) == 10:
-        return
-
-    global currentProduct
-    global categories
-
-    lastCategoryId = None
-
-    categoriesAphex = text.split('|')
-
-    for cat in range(1, len(categoriesAphex)):
-        curCat = categoriesAphex[cat]
-        indexLB = curCat.index('[')
-        indexRB = curCat.index(']')
-
-        aphex = (curCat[:indexLB], curCat[indexLB + 1: -1])
-        currentCategory = categories.get(aphex[1], None)
-
-        if currentCategory == None:
-            newCategory = Beans.Category()
-            newCategory.superCategory = lastCategoryId
-            newCategory.id = aphex[1]
-            newCategory.description = aphex[0]
-            categories[newCategory.id] = newCategory
-
-        lastCategoryId = aphex[1]
-
-    categoryObject = Beans.ProductCategory()
-    categoryObject.productId = currentProduct.id
-    categoryObject.categoryId = lastCategoryId
-    productsCategories.append(categoryObject)
-
-
-def parseReviews(text):
-    if len(text) == 7:
-        return
-
-    reviewSplit = text.split(':')
-    newRating = Beans.Review()
-
-    newRating.date = reviewSplit[0][:9]
-    newRating.customerId = reviewSplit[1][1:reviewSplit[1].index('r')]
-    newRating.rating = int(reviewSplit[2][:reviewSplit[2].index('v')])
-    newRating.votes = int(reviewSplit[3][:reviewSplit[3].index('h')])
-    newRating.helpful = int(reviewSplit[4])
-
-    reviews.append(newRating)
-
-
-parse = {
-    Context.ID: parseId,
-    Context.ASIN: parseASIN,
-    Context.TITLE: parseTitle,
-    Context.GROUP: parseGroup,
-    Context.SALESRANK: parseSalesRank,
-    Context.SIMILAR: parseSimilar,
-    Context.CATEGORIES: parseCategories,
-    Context.REVIEWS: parseReviews,
-    Context.PURGED: None,
-    Context.NONE: None
-}
-
-processed = 0
-
-with open('./docs/simpletest.txt') as f:
-    for line in f:
-
-        if len(line) < 4:
-            continue
-
-        if line[0: 3] != '   ':
-            rawString = line.strip().split(':', 1)
+        currentGroup = self.groups.get(text, None)
+        if currentGroup != None:
+            self.currentProduct.groupId = currentGroup.id
         else:
-            rawString = line.strip().split("\n")
+            self.currentGroupIndex += 1
+            curGroup = self.groups[text] = Beans.PGroup()
+            curGroup.id = self.currentProduct.groupId = self.currentGroupIndex
+            curGroup.description = text
 
-        curContext = switcher.get(rawString[0], Context.NONE)
+    def parseSalesRank(self, text):
 
-        if curContext != Context.NONE:
-            lastUpperContext = curContext
+        # global currentProduct
 
-        if curContext != Context.ID:
-            if curContext != Context.PURGED:
-                parsingFunction = parse[lastUpperContext]
+        self.currentProduct.salesrank = int(text)
 
-                if parsingFunction != None:
-                    if lastUpperContext != Context.CATEGORIES and lastUpperContext != Context.REVIEWS:
-                        parsingFunction(rawString[1].strip())
+    def parseSimilar(self, text):
+
+        # global currentProduct
+        # global similarProducts
+
+        pieces = text.split('  ')
+
+        for i in range(1, len(pieces)):
+            similarObject = Beans.SimilarProducts()
+            similarObject.mainProductAsin = self.currentProduct.asin
+            similarObject.similarProductAsin = pieces[i]
+            # self.similarProducts.append(similarObject)
+
+    def parseCategories(self, text):
+        if len(text) == 10:
+            return
+
+        # global currentProduct
+        # global categories
+
+        lastCategoryId = None
+
+        categoriesAphex = text.split('|')
+
+        for cat in range(1, len(categoriesAphex)):
+            curCat = categoriesAphex[cat]
+            indexLB = curCat.index('[')
+            indexRB = curCat.index(']')
+
+            aphex = (curCat[:indexLB], curCat[indexLB + 1: -1])
+            currentCategory = self.categories.get(aphex[1], None)
+
+            if currentCategory == None:
+                newCategory = Beans.Category()
+                newCategory.superCategory = lastCategoryId
+                newCategory.id = aphex[1]
+                newCategory.description = aphex[0]
+                self.categories[newCategory.id] = newCategory
+
+            lastCategoryId = aphex[1]
+
+        categoryObject = Beans.ProductCategory()
+        categoryObject.productId = self.currentProduct.id
+        categoryObject.categoryId = lastCategoryId
+        self.productsCategories.append(categoryObject)
+
+    def parseReviews(self, text):
+        if len(text) == 7:
+            return
+
+        reviewSplit = text.split(':')
+        newRating = Beans.Review()
+
+        newRating.date = reviewSplit[0][:9]
+        newRating.customerId = reviewSplit[1][1:reviewSplit[1].index('r')]
+        newRating.rating = int(reviewSplit[2][:reviewSplit[2].index('v')])
+        newRating.votes = int(reviewSplit[3][:reviewSplit[3].index('h')])
+        newRating.helpful = int(reviewSplit[4])
+
+        # self.reviews.append(newRating)
+
+    parse = {
+        Context.ID: parseId,
+        Context.ASIN: parseASIN,
+        Context.TITLE: parseTitle,
+        Context.GROUP: parseGroup,
+        Context.SALESRANK: parseSalesRank,
+        Context.SIMILAR: parseSimilar,
+        Context.CATEGORIES: parseCategories,
+        Context.REVIEWS: parseReviews,
+        Context.PURGED: None,
+        Context.NONE: None
+    }
+
+    def parseFile(self, filename, factory):
+        processed = 0
+        lastUpperContext = Context.NONE
+
+        with open(filename) as f:
+            for line in f:
+
+                if len(line) < 4:
+                    continue
+
+                if line[0: 3] != '   ':
+                    rawString = line.strip().split(':', 1)
+                else:
+                    rawString = line.strip().split("\n")
+
+                curContext = self.switcher.get(rawString[0], Context.NONE)
+
+                if curContext != Context.NONE:
+                    lastUpperContext = curContext
+
+                if curContext != Context.ID:
+                    if curContext != Context.PURGED:
+                        parsingFunction = self.parse[lastUpperContext]
+
+                        if parsingFunction != None:
+                            if lastUpperContext != Context.CATEGORIES and lastUpperContext != Context.REVIEWS:
+                                parsingFunction(self, rawString[1].strip())
+                            else:
+                                parsingFunction(self, rawString[0].strip())
                     else:
-                        parsingFunction(rawString[0].strip())
-            else:
-                currentProduct = None
-        else:
-            if currentProduct != None:
-                products.append(currentProduct)
-            processed += 1
-            currentProduct = Beans.Product()
-            parseId(rawString[1].strip())
-            
-            if processed % 1000 == 0:
-                print "Processed ", processed, " products."
+                        self.currentProduct = None
+                else:
+                    if self.currentProduct != None:
+                        self.products.append(self.currentProduct)
+                        processed += 1
 
+                        if processed % 10001 == 0:
+                            for p in self.products:
+                                factory.insertProduct(p)
+                            factory.commit()
+                            self.products = []
+                            print "Processed at ", processed, " instanzas."
 
+                    self.currentProduct = Beans.Product()
+                    self.parseId(rawString[1].strip())
 
-if currentProduct != None:
-    products.append(currentProduct)
+        for p in self.products:
+            factory.insertProduct(p)
+        factory.commit()
+        self.products = []
+        print "Processed ", processed, " instanzas finally."
 
-# print "\nProducts : "
-# for p in products:
-#     print p.id, ' - ', p.title
+        if self.currentProduct != None:
+            self.products.append(self.currentProduct)
+        self.currentGroupIndex = 0
+        self.currentProduct = None
 
-# print "\nGroups : "
-# for g in groups:
-#     print groups[g].id, ' - ', g
+    def printAll(self):
+        print "\nProducts : "
+        for p in self.products:
+            print p.id, ' - ', p.title
 
-# print "\nSimilar Products : "
-# for sim in similarProducts:
-#     print sim.mainProductAsin, ' - ', sim.similarProductAsin
+        print "\nGroups : "
+        for g in self.groups:
+            print self.groups[g].id, ' - ', g
 
-# print "\nCategories : "
-# for cat in categories:
-#     print cat, ' - ', categories[cat].description
+        print "\nSimilar Products : "
+        for sim in self.similarProducts:
+            print sim.mainProductAsin, ' - ', sim.similarProductAsin
 
-# print "\nSubCategories : "
-# for subc in productsCategories:
-#     print subc.productId, ' - ', subc.categoryId
+        print "\nCategories : "
+        for cat in self.categories:
+            print cat, ' - ', self.categories[cat].description
 
-# print "\nReviews : "
-# for rev in reviews:
-#     print rev.date, ' - ', rev.customerId, ' - ', rev.rating, ' - ', rev.votes, ' - ', rev.helpful
+        print "\nSubCategories : "
+        for subc in self.productsCategories:
+            print subc.productId, ' - ', subc.categoryId
+
+        print "\nReviews : "
+        for rev in self.reviews:
+            print rev.date, ' - ', rev.customerId, ' - ', rev.rating, ' - ', rev.votes, ' - ', rev.helpful

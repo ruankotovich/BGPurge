@@ -1,3 +1,6 @@
+class Query():
+
+    CREATE_SCHEMA_SQL = """
 drop table if exists review;
 drop table if exists productCategory;
 drop table if exists similarproducts;
@@ -8,7 +11,7 @@ drop table if exists product;
 create table Product(
     pro_id int not null unique,
     pro_asin varchar(30) not null,
-    pro_title varchar(100) not null,
+    pro_title varchar(500) not null,
     pro_groupid int not null,
     pro_salesrank int default 0,
     primary key(pro_id, pro_asin)
@@ -53,3 +56,4 @@ create table Review(
 	primary key(rev_pro_id, rev_customer_id)
 --	foreign key(rev_pro_id) references Product(pro_id),
 );
+"""
