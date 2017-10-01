@@ -114,10 +114,8 @@ def parseCategories(text):
         indexLB = curCat.index('[')
         indexRB = curCat.index(']')
 
-        aphex = (curCat[0:indexLB], curCat[indexLB + 1:len(curCat) - 1])
+        aphex = (curCat[:indexLB], curCat[indexLB + 1: -1])
         currentCategory = categories.get(aphex[1], None)
-        
-        
 
         if currentCategory == None:
             newCategory = Beans.Category()
@@ -125,13 +123,29 @@ def parseCategories(text):
             newCategory.id = aphex[1]
             newCategory.description = aphex[0]
             categories[newCategory.id] = newCategory
-        
+
         lastCategoryId = aphex[1]
 
     categoryObject = Beans.ProductCategories()
     categoryObject.productId = currentProduct.id
     categoryObject.categoryId = lastCategoryId
     productsCategories.append(categoryObject)
+
+
+def parseReviews(text):
+    if len(text) == 7:
+        return
+
+    reviewSplit = text.split(':')
+    newRating = Beans.Review()
+
+    newRating.date = reviewSplit[0][:9]
+    newRating.customerId = reviewSplit[1][1:reviewSplit[1].index('r')]
+    newRating.rating = int(reviewSplit[2][:reviewSplit[2].index('v')])
+    newRating.votes = int(reviewSplit[3][:reviewSplit[3].index('h')])
+    newRating.helpful = int(reviewSplit[4])
+
+    reviews.append(newRating)
 
 
 parse = {
@@ -142,13 +156,18 @@ parse = {
     Context.SALESRANK: parseSalesRank,
     Context.SIMILAR: parseSimilar,
     Context.CATEGORIES: parseCategories,
-    Context.REVIEWS: None,
+    Context.REVIEWS: parseReviews,
     Context.PURGED: None,
     Context.NONE: None
 }
 
-with open('./docs/simpletest.txt') as f:
+processed = 0
+
+with open('./docs/bigtest.txt') as f:
     for line in f:
+
+        if len(line) < 4:
+            continue
 
         if line[0: 3] != '   ':
             rawString = line.strip().split(':', 1)
@@ -174,29 +193,38 @@ with open('./docs/simpletest.txt') as f:
         else:
             if currentProduct != None:
                 products.append(currentProduct)
+            processed += 1
             currentProduct = Beans.Product()
             parseId(rawString[1].strip())
+            
+            if processed % 1000 == 0:
+                print "Processed ", processed, " products."
+
 
 
 if currentProduct != None:
     products.append(currentProduct)
 
-print "\nProducts : "
-for p in products:
-    print p.id, ' - ', p.title
+# print "\nProducts : "
+# for p in products:
+#     print p.id, ' - ', p.title
 
-print "\nGroups : "
-for g in groups:
-    print groups[g].id, ' - ', g
+# print "\nGroups : "
+# for g in groups:
+#     print groups[g].id, ' - ', g
 
-print "\nSimilar Products : "
-for sim in similarProducts:
-    print sim.mainProductAsin, ' - ', sim.similarProductAsin
+# print "\nSimilar Products : "
+# for sim in similarProducts:
+#     print sim.mainProductAsin, ' - ', sim.similarProductAsin
 
-print "\nCategories : "
-for cat in categories:
-    print cat, ' - ', categories[cat].description
+# print "\nCategories : "
+# for cat in categories:
+#     print cat, ' - ', categories[cat].description
 
-print "\nSubCategories : "
-for subc in productsCategories:
-    print subc.productId, ' - ', subc.categoryId
+# print "\nSubCategories : "
+# for subc in productsCategories:
+#     print subc.productId, ' - ', subc.categoryId
+
+# print "\nReviews : "
+# for rev in reviews:
+#     print rev.date, ' - ', rev.customerId, ' - ', rev.rating, ' - ', rev.votes, ' - ', rev.helpful
