@@ -2,6 +2,7 @@ import re
 import beans as Beans
 from enum import Enum
 
+
 class Context(Enum):
     NONE = 0,
     ID = 1,
@@ -19,9 +20,9 @@ class Dataparser:
     products = []
     similarProducts = []
     productsCategories = []
+    reviews = []
     groups = {}
     categories = {}
-    reviews = []
 
     currentGroupIndex = 0
     currentProduct = None
@@ -88,7 +89,7 @@ class Dataparser:
             similarObject = Beans.SimilarProducts()
             similarObject.mainProductAsin = self.currentProduct.asin
             similarObject.similarProductAsin = pieces[i]
-            # self.similarProducts.append(similarObject)
+            self.similarProducts.append(similarObject)
 
     def parseCategories(self, text):
         if len(text) == 10:
@@ -103,8 +104,8 @@ class Dataparser:
 
         for cat in range(1, len(categoriesAphex)):
             curCat = categoriesAphex[cat]
-            indexLB = curCat.index('[')
-            indexRB = curCat.index(']')
+            indexLB = curCat.rindex('[')
+            indexRB = curCat.rindex(']')
 
             aphex = (curCat[:indexLB], curCat[indexLB + 1: -1])
             currentCategory = self.categories.get(aphex[1], None)
@@ -129,14 +130,14 @@ class Dataparser:
 
         reviewSplit = text.split(':')
         newRating = Beans.Review()
-
+        newRating.productId = self.currentProduct.id
         newRating.date = reviewSplit[0][:9]
-        newRating.customerId = reviewSplit[1][1:reviewSplit[1].index('r')]
+        newRating.customerId = reviewSplit[1][1:reviewSplit[1].index(
+            'r')].strip()
         newRating.rating = int(reviewSplit[2][:reviewSplit[2].index('v')])
         newRating.votes = int(reviewSplit[3][:reviewSplit[3].index('h')])
         newRating.helpful = int(reviewSplit[4])
-
-        # self.reviews.append(newRating)
+        self.reviews.append(newRating)
 
     parse = {
         Context.ID: parseId,
@@ -187,20 +188,47 @@ class Dataparser:
                         self.products.append(self.currentProduct)
                         processed += 1
 
-                        if processed % 10001 == 0:
+                        if processed % 6000 == 0:
+                            print "Dumping..."
                             for p in self.products:
                                 factory.insertProduct(p)
+                            for sp in self.similarProducts:
+                                factory.insertSimilar(sp)
+                            for r in self.reviews:
+                                factory.insertReview(r)
+                            for cat in self.productsCategories:
+                                factory.insertProCategory(cat)
+
                             factory.commit()
                             self.products = []
-                            print "Processed at ", processed, " instanzas."
+                            self.similarProducts = []
+                            self.reviews = []
+                            self.productsCategories = []
+
+                            print "Processed ", processed, " instanzas."
 
                     self.currentProduct = Beans.Product()
                     self.parseId(rawString[1].strip())
-
+        print "Dumping the last records..."
         for p in self.products:
             factory.insertProduct(p)
+        for sp in self.similarProducts:
+            factory.insertSimilar(sp)
+        for r in self.reviews:
+            factory.insertReview(r)
+        for cat in self.productsCategories:
+            factory.insertProCategory(cat)
+        for key, group in self.groups.iteritems():
+            factory.insertGroup(group)
+        for key, category in self.categories.iteritems():
+            factory.insertCategory(category)
+
         factory.commit()
+
         self.products = []
+        self.similarProducts = []
+        self.reviews = []
+        self.productsCategories = []
         print "Processed ", processed, " instanzas finally."
 
         if self.currentProduct != None:
