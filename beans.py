@@ -34,3 +34,7 @@ class Review:
     rating = None  # df this->id
     votes = None  # df this->id
     helpful = None  # df this->id
+
+class Customer:
+    id = None
+    sha = None

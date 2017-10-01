@@ -16,7 +16,8 @@ class SchemaFactory():
         print "Adding category foreign keys..."
         self.cur.execute(Query.ADD_CATEGORY_FOREIGN_KEY)
         print "Adding review foreign keys..."
-        self.cur.execute(Query.ADD_REVIEW_FOREIGN_KEY)
+        self.cur.execute(Query.ADD_REVIEW_FOREIGN_KEY_PRODUCT)
+        self.cur.execute(Query.ADD_REVIEW_FOREIGN_KEY_CUSTOMER)
         print "Adding procat foreign keys..."
         self.cur.execute(Query.ADD_PROCAT_FOREIGN_KEY)
         print "Removing unused products..."
@@ -33,8 +34,13 @@ class SchemaFactory():
         self.cur.execute(sql)
 
     def insertReview(self, review):
-        sql = "insert into review(rev_pro_id,rev_customer_id,rev_date,rev_rating,rev_votes,rev_helpful) values (%d, \'%s\', \'%s\', %d, %d, %d)" % (
+        sql = "insert into review(rev_pro_id,rev_customer_id,rev_date,rev_rating,rev_votes,rev_helpful) values (%d, %d, \'%s\', %d, %d, %d)" % (
             review.productId, review.customerId, review.date, review.rating, review.votes, review.helpful)
+        self.cur.execute(sql)
+
+    def insertCustomer(self, customer):
+        sql = "insert into customer(customer_id, customer_sha) values (%d, \'%s\')" % (
+            customer.id, customer.sha)
         self.cur.execute(sql)
 
     def insertSimilar(self, similar):
@@ -71,7 +77,7 @@ class SchemaFactory():
 
 
 factory = SchemaFactory()
-# factory.createSchema()
+factory.createSchema()
 factory.dataparser.parseFile(sys.argv[5], factory)
 factory.purgeDatabase()
 factory.commit()

@@ -1,7 +1,8 @@
 class Query():
 
     ADD_CATEGORY_FOREIGN_KEY = """alter table category add constraint fk_cat_super_cat foreign key(cat_super_cat_id) references category(cat_id);""" 
-    ADD_REVIEW_FOREIGN_KEY = """alter table review add constraint fk_rev_pro foreign key(rev_pro_id) references Product(pro_id);""" 
+    ADD_REVIEW_FOREIGN_KEY_PRODUCT = """alter table review add constraint fk_rev_pro foreign key(rev_pro_id) references Product(pro_id);""" 
+    ADD_REVIEW_FOREIGN_KEY_CUSTOMER = """alter table review add constraint fk_rev_cus foreign key(rev_customer_id) references Customer(customer_id);""" 
     ADD_PROCAT_FOREIGN_KEY = """alter table productcategory add constraint fk_procat_cat_id foreign key(pro_cat_cat_id) references category(cat_id),add constraint fk_procat_pro_id foreign key(pro_cat_pro_id) references product(pro_id);""" 
     REMOVE_UNUSED_SIMILARS = """delete from similarproducts where sim_pro_surrogate_id in (select sim_pro_surrogate_id from product p1 join similarproducts on p1.pro_asin = sim_pro_asin left join product p2 on p2.pro_asin = sim_pro_sim_asin where p2.pro_asin is null);""" 
     ADD_PROSIM_FOREIGN_KEY = """alter table similarproducts add constraint fk_simpro_pro_asin foreign key(sim_pro_asin) references product(pro_asin), add constraint fk_simpro_pro_sim_asin foreign key(sim_pro_sim_asin) references product(pro_asin);""" 
@@ -18,6 +19,7 @@ drop table if exists similarproducts;
 drop table if exists pgroup;
 drop table if exists category;
 drop table if exists product;
+drop table if exists customer;
 
 create table Product(
     pro_id int not null unique,
@@ -60,14 +62,19 @@ create table ProductCategory(
 );
 
 create table Review(
-    rev_id serial not null,
+    rev_id serial unique not null,
     rev_pro_id int not null,
-    rev_customer_id varchar(40) not null,
+    rev_customer_id int not null,
     rev_date date not null,
     rev_rating smallint default 0,
     rev_votes smallint default 0,
     rev_helpful smallint default 0,
     primary key(rev_id, rev_pro_id, rev_customer_id)
 --    foreign key(rev_pro_id) references Product(pro_id),
+);
+create table Customer(
+    customer_id int unique not null,
+    customer_sha varchar(40) unique not null,
+    primary key(customer_id, customer_sha)
 );
 """

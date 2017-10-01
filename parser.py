@@ -23,8 +23,10 @@ class Dataparser:
     reviews = []
     groups = {}
     categories = {}
+    customers = {}
 
     currentGroupIndex = 0
+    currentCustomerIndex = 0
     currentProduct = None
 
     switcher = {
@@ -132,8 +134,19 @@ class Dataparser:
         newRating = Beans.Review()
         newRating.productId = self.currentProduct.id
         newRating.date = reviewSplit[0][:9]
-        newRating.customerId = reviewSplit[1][1:reviewSplit[1].index(
-            'r')].strip()
+
+        customerSha = reviewSplit[1][1:reviewSplit[1].index('r')].strip()
+        customer = self.customers.get(customerSha, None)
+
+        if customer != None:
+            newRating.customerId = customer.id
+        else:
+            newCustomer = Beans.Customer()
+            self.currentCustomerIndex += 1
+            newRating.customerId = newCustomer.id = self.currentCustomerIndex
+            newCustomer.sha = customerSha
+            self.customers[customerSha] = newCustomer
+
         newRating.rating = int(reviewSplit[2][:reviewSplit[2].index('v')])
         newRating.votes = int(reviewSplit[3][:reviewSplit[3].index('h')])
         newRating.helpful = int(reviewSplit[4])
@@ -223,10 +236,13 @@ class Dataparser:
             factory.insertReview(r)
         for cat in self.productsCategories:
             factory.insertProCategory(cat)
+
         for key, group in self.groups.iteritems():
             factory.insertGroup(group)
         for key, category in self.categories.iteritems():
             factory.insertCategory(category)
+        for key, customer in self.customers.iteritems():
+            factory.insertCustomer(customer)
 
         factory.commit()
 
@@ -234,7 +250,7 @@ class Dataparser:
         self.similarProducts = []
         self.reviews = []
         self.productsCategories = []
-        print "Processed in disk", processed, " instanzas finally."
+        print "Processed in disk", processed, " instanzas, finally!"
 
         if self.currentProduct != None:
             self.products.append(self.currentProduct)
