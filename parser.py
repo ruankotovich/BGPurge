@@ -163,7 +163,7 @@ parse = {
 
 processed = 0
 
-with open('./docs/bigtest.txt') as f:
+with open('./docs/simpletest.txt') as f:
     for line in f:
 
         if len(line) < 4:
