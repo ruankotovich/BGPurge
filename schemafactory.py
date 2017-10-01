@@ -1,6 +1,11 @@
 import psycopg2
+import sys
 
-con = psycopg2.connect(host='localhost', database='sw_trab02',user='postgres',password='123')
+firstarg=sys.argv[1]
+secondarg=sys.argv[2]
+thirdarg=sys.argv[3]
+
+con = psycopg2.connect(host=sys.argv[1], database=sys.argv[4],user=sys.argv[2],password=sys.argv[3])
 cur = con.cursor()
 
 sql = """
