@@ -5,7 +5,6 @@ drop table if exists pgroup;
 drop table if exists category;
 drop table if exists product;
 
-
 create table Product(
     pro_id int not null unique,
     pro_asin varchar(30) not null,
