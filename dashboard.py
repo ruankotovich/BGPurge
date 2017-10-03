@@ -75,9 +75,9 @@ def queryF():
     print("Processando, aguarde... (pode demorar bastante...)")
     cur.execute(Query.SELECT_F)
     recset = cur.fetchall()
-    print("------------------------------------------------------------\nTitle\t\t\t\t\t\t\tRating Average\n------------------------------------------------------------")
+    print("------------------------------------------------------------\nID\tTitle\t\t\t\t\t\t\tRating Average\n------------------------------------------------------------")
     for rec in recset:
-        print(str(rec[0])+'\t\t\t'+str(rec[1]))
+        print(str(rec[0])+'\t'+str(rec[1])+'\t\t\t'+str(rec[2]))
 
 
 def queryG():
