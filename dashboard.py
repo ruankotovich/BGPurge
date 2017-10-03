@@ -18,9 +18,9 @@ def wait():
 
 def queryA():
     clear()
-    choice = raw_input("Informe o ID > ")
+    choice = raw_input("Informe o ASIN > ")
     clear()
-    id = int(int(choice))
+    id = choice
     print("Processando, aguarde...")
     cur.execute(Query.SELECT_A % (id, id))
     recset = cur.fetchall()
@@ -31,9 +31,9 @@ def queryA():
 
 def queryB():
     clear()
-    choice = raw_input("Informe o ID > ")
+    choice = raw_input("Informe o ASIN > ")
     clear()
-    id = int(int(choice))
+    id = choice
     print("Processando, aguarde...")
     cur.execute(Query.SELECT_B % (id))
     recset = cur.fetchall()
@@ -45,9 +45,9 @@ def queryB():
 
 def queryC():
     clear()
-    choice = raw_input("Informe o ID > ")
+    choice = raw_input("Informe o ASIN > ")
     clear()
-    id = int(int(choice))
+    id = choice
     print("Processando, aguarde...")
     cur.execute(Query.SELECT_C % (id))
     recset = cur.fetchall()
@@ -57,8 +57,13 @@ def queryC():
 
 
 def queryD():
-    print("Perform query D")
-
+    clear()
+    print("Processando, aguarde... (pode demorar bastante...)")
+    cur.execute(Query.SELECT_D)
+    recset = cur.fetchall()
+    print("------------------------------------------------------------\nGroup\tASIN\tTitle\t\t\t\tSalesRank\n------------------------------------------------------------")
+    for rec in recset:
+        print(str(rec[0])+'\t'+str(rec[1])+'\t'+str(rec[2])+'\t\t'+str(rec[3]))
 
 def queryE():
     clear()
@@ -79,9 +84,14 @@ def queryF():
     for rec in recset:
         print(str(rec[0])+'\t'+str(rec[1])+'\t\t\t'+str(rec[2]))
 
-
 def queryG():
-    print("Perform query G")
+    clear()
+    print("Processando, aguarde... (pode demorar bastante, mas bastante mesmo...)")
+    cur.execute(Query.SELECT_G)
+    recset = cur.fetchall()
+    print("------------------------------------------------------------\nGroup\t\tSHA\t\tComment Cont\n------------------------------------------------------------")
+    for rec in recset:
+        print(str(rec[0])+'\t\t'+str(rec[1])+'\t\t'+str(rec[2]))
 
 
 def incorrect():
@@ -108,7 +118,7 @@ while 1:
     print("(E) Listar os 10 produtos com a maior media de avaliacoes uteis positivas por produto")
     print("(F) Listar a 5 categorias de produto com a maior media de avaliacoes uteis positivas por produto")
     print("(G) Listar os 10 clientes que mais fizeram comentarios por grupo de produto")
-    print("\n(X) Sair")
+    print("\n\n(X) Sair")
 
     choice = raw_input("> ")
     if(choice == 'X'):
@@ -119,3 +129,4 @@ while 1:
     functionQuery()
     wait()
     clear()
+
