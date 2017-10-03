@@ -17,13 +17,13 @@ class Context(Enum):
 
 
 class Dataparser:
-    products = []
-    similarProducts = []
-    productsCategories = []
-    reviews = []
-    groups = {}
-    categories = {}
-    customers = {}
+    products_ = []
+    similarProducts_ = []
+    productsCategories_ = []
+    reviews_ = []
+    groups_ = {}
+    categories_ = {}
+    customers_ = {}
 
     currentGroupIndex = 0
     currentCustomerIndex = 0
@@ -65,12 +65,12 @@ class Dataparser:
         # global currentGroup
         # global currentGroupIndex
 
-        currentGroup = self.groups.get(text, None)
+        currentGroup = self.groups_.get(text, None)
         if currentGroup != None:
             self.currentProduct.groupId = currentGroup.id
         else:
             self.currentGroupIndex += 1
-            curGroup = self.groups[text] = Beans.PGroup()
+            curGroup = self.groups_[text] = Beans.PGroup()
             curGroup.id = self.currentProduct.groupId = self.currentGroupIndex
             curGroup.description = text
 
@@ -91,7 +91,7 @@ class Dataparser:
             similarObject = Beans.SimilarProducts()
             similarObject.mainProductAsin = self.currentProduct.asin
             similarObject.similarProductAsin = pieces[i]
-            self.similarProducts.append(similarObject)
+            self.similarProducts_.append(similarObject)
 
     def parseCategories(self, text):
         if len(text) == 10:
@@ -110,21 +110,21 @@ class Dataparser:
             indexRB = curCat.rindex(']')
 
             aphex = (curCat[:indexLB], curCat[indexLB + 1: -1])
-            currentCategory = self.categories.get(aphex[1], None)
+            currentCategory = self.categories_.get(aphex[1], None)
 
             if currentCategory == None:
                 newCategory = Beans.Category()
                 newCategory.superCategory = lastCategoryId
                 newCategory.id = aphex[1]
                 newCategory.description = aphex[0]
-                self.categories[newCategory.id] = newCategory
+                self.categories_[newCategory.id] = newCategory
 
             lastCategoryId = aphex[1]
 
         categoryObject = Beans.ProductCategory()
         categoryObject.productId = self.currentProduct.id
         categoryObject.categoryId = lastCategoryId
-        self.productsCategories.append(categoryObject)
+        self.productsCategories_.append(categoryObject)
 
     def parseReviews(self, text):
         if len(text) == 7:
@@ -136,7 +136,7 @@ class Dataparser:
         newRating.date = reviewSplit[0][:9]
 
         customerSha = reviewSplit[1][1:reviewSplit[1].index('r')].strip()
-        customer = self.customers.get(customerSha, None)
+        customer = self.customers_.get(customerSha, None)
 
         if customer != None:
             newRating.customerId = customer.id
@@ -145,12 +145,12 @@ class Dataparser:
             self.currentCustomerIndex += 1
             newRating.customerId = newCustomer.id = self.currentCustomerIndex
             newCustomer.sha = customerSha
-            self.customers[customerSha] = newCustomer
+            self.customers_[customerSha] = newCustomer
 
         newRating.rating = int(reviewSplit[2][:reviewSplit[2].index('v')])
         newRating.votes = int(reviewSplit[3][:reviewSplit[3].index('h')])
         newRating.helpful = int(reviewSplit[4])
-        self.reviews.append(newRating)
+        self.reviews_.append(newRating)
 
     parse = {
         Context.ID: parseId,
@@ -198,26 +198,30 @@ class Dataparser:
                         self.currentProduct = None
                 else:
                     if self.currentProduct != None:
-                        self.products.append(self.currentProduct)
+                        self.products_.append(self.currentProduct)
                         processed += 1
-                        if processed % 5000 == 0:
+                        if processed % 1000 == 0:
                             print "Processed in memory ", processed, " instanzas."
-                        if processed % 50000 == 0:
+                        if processed % 10000 == 0:
                             print "Dumping..."
-                            for p in self.products:
-                                factory.insertProduct(p)
-                            for sp in self.similarProducts:
-                                factory.insertSimilar(sp)
-                            for r in self.reviews:
-                                factory.insertReview(r)
-                            for cat in self.productsCategories:
-                                factory.insertProCategory(cat)
+                            # for p in self.products:
+                            factory.insertProducts(self.products_)
+                            
+                            self.products_ = []
+                            # for sp in self.similarProducts:
+                            factory.insertSimilars(self.similarProducts_)
+
+                            self.similarProducts_ = []
+                            # for r in self.reviews:
+                            factory.insertReviews(self.reviews_)
+                            self.reviews_ = []
+                            # for cat in self.productsCategories:
+                            factory.insertProCategories(
+                                self.productsCategories_)
+
+                            self.productsCategories_ = []
 
                             factory.commit()
-                            self.products = []
-                            self.similarProducts = []
-                            self.reviews = []
-                            self.productsCategories = []
 
                             print "Processed in disk", processed, " instanzas."
 
@@ -225,59 +229,47 @@ class Dataparser:
                     self.parseId(rawString[1].strip())
 
         if self.currentProduct != None:
-            self.products.append(self.currentProduct)
+            self.products_.append(self.currentProduct)
 
         print "Dumping the last records..."
-        for p in self.products:
-            factory.insertProduct(p)
-        for sp in self.similarProducts:
-            factory.insertSimilar(sp)
-        for r in self.reviews:
-            factory.insertReview(r)
-        for cat in self.productsCategories:
-            factory.insertProCategory(cat)
+        factory.insertProducts(self.products_)
+        self.products_ = None
+        # for sp in self.similarProducts:
+        factory.insertSimilars(self.similarProducts_)
+        self.similarProducts_ = None
+        # for r in self.reviews:
+        factory.insertReviews(self.reviews_)
+        self.reviews_ = None
+        # for cat in self.productsCategories:
+        factory.insertProCategories(self.productsCategories_)
+        self.productsCategories_ = None
 
-        for key, group in self.groups.iteritems():
+
+        for key, group in self.groups_.iteritems():
             factory.insertGroup(group)
-        for key, category in self.categories.iteritems():
+        for key, category in self.categories_.iteritems():
             factory.insertCategory(category)
-        for key, customer in self.customers.iteritems():
+        for key, customer in self.customers_.iteritems():
             factory.insertCustomer(customer)
-
+        # for key, group in self.groups.iteritems():
+        # _groups = self.groups_.values()
+        # factory.insertGroups(_groups)
+        # self.groups_ = None
+        # _groups = None
+        # for key, category in self.categories.iteritems():
+        # _categories = self.categories_.values()
+        # factory.insertCategories(_categories)
+        # self.categories_ = None
+        # _categories = None
+        # for key, customer in self.customers.iteritems():
+        # _customers = self.customers_.values()
+        # factory.insertCustomers(_customers)
+        # self.customers_ = None
+        # _customers = None
+        
         factory.commit()
 
-        self.products = []
-        self.similarProducts = []
-        self.reviews = []
-        self.productsCategories = []
         print "Processed in disk", processed, " instanzas, finally!"
 
-        if self.currentProduct != None:
-            self.products.append(self.currentProduct)
         self.currentGroupIndex = 0
         self.currentProduct = None
-
-    def printAll(self):
-        print "\nProducts : "
-        for p in self.products:
-            print p.id, ' - ', p.title
-
-        print "\nGroups : "
-        for g in self.groups:
-            print self.groups[g].id, ' - ', g
-
-        print "\nSimilar Products : "
-        for sim in self.similarProducts:
-            print sim.mainProductAsin, ' - ', sim.similarProductAsin
-
-        print "\nCategories : "
-        for cat in self.categories:
-            print cat, ' - ', self.categories[cat].description
-
-        print "\nSubCategories : "
-        for subc in self.productsCategories:
-            print subc.productId, ' - ', subc.categoryId
-
-        print "\nReviews : "
-        for rev in self.reviews:
-            print rev.date, ' - ', rev.customerId, ' - ', rev.rating, ' - ', rev.votes, ' - ', rev.helpful

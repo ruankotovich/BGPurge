@@ -8,7 +8,7 @@ class Query():
     ADD_PROSIM_FOREIGN_KEY = """alter table similarproducts add constraint fk_simpro_pro_asin foreign key(sim_pro_asin) references product(pro_asin), add constraint fk_simpro_pro_sim_asin foreign key(sim_pro_sim_asin) references product(pro_asin);""" 
  
     SELECT_A = """(select * from review join customer on rev_customer_id = customer_id join product on rev_pro_id = pro_id where pro_asin = \'%s\' order by rev_rating desc, rev_helpful desc limit 5) union all (select * from review join customer on rev_customer_id = customer_id join product on rev_pro_id = pro_id where pro_asin = \'%s\' order by rev_rating, rev_helpful desc limit 5);""" 
-    SELECT_B = """select p2.pro_id,p2.pro_asin,p2.pro_title,p2.pro_salesrank from product p, similarproducts, product p2 where p.pro_asin = sim_pro_asin and p2.pro_asin = sim_pro_sim_asin and p.pro_salesrank <= p2.pro_salesrank and p.pro_asin = \'%s\';""" 
+    SELECT_B = """select p2.pro_id,p2.pro_asin,p2.pro_title,p2.pro_salesrank from product p, similarproducts, product p2 where p.pro_asin = sim_pro_asin and p2.pro_asin = sim_pro_sim_asin and p.pro_salesrank <= p2.pro_salesrank and p2.pro_salesrank > 0 and p.pro_asin = \'%s\';""" 
     SELECT_C = """select r.rev_date, avg(rev_rating) as rev_rating_average from product join review r on rev_pro_id = pro_id where pro_asin = \'%s\' group by r.rev_date order by rev_date ;"""
     SELECT_D = """SELECT rank_filter.gro_description,rank_filter.pro_asin, rank_filter.pro_title,rank_filter.pro_salesrank  FROM (
         SELECT *, 
@@ -16,7 +16,7 @@ class Query():
             PARTITION BY gro_id
             ORDER BY pro_salesrank ASC
         )
-        FROM (select * from pgroup join product on pro_groupid = gro_id) as did
+        FROM (select * from pgroup join product on pro_groupid = gro_id where pro_salesrank > 0) as did
     ) rank_filter where rank <= 10;"""
 
     SELECT_E = """select pro_title, avg(rev_rating) as ravg, avg(rev_helpful) as havg from review join product p on rev_pro_id = pro_id  group by pro_id, pro_title order by ravg desc, ravg limit 10"""
@@ -27,15 +27,15 @@ class Query():
             PARTITION BY gro_id
             ORDER BY c DESC
         )
-        FROM (	select rev_customer_id,gro_id, count(*) as c from product
-				join review on rev_pro_id = pro_id
-				join pgroup on gro_id = pro_groupid
-				join customer on rev_customer_id = customer_id
-				group by rev_customer_id, gro_id
-				order by c desc) as did
+        FROM (  select rev_customer_id,gro_id, count(*) as c from product
+        join review on rev_pro_id = pro_id
+        join pgroup on gro_id = pro_groupid
+        join customer on rev_customer_id = customer_id
+        group by rev_customer_id, gro_id
+        order by c desc) as did
     ) rank_filter
     join customer cp on rev_customer_id = cp.customer_id
-	where rank <= 10
+  where rank <= 10
     order by gro_id, rank;
 """
     
@@ -48,6 +48,7 @@ drop table if exists pgroup;
 drop table if exists category;
 drop table if exists product;
 drop table if exists customer;
+
 
 create table Product(
     pro_id int not null unique,
@@ -68,25 +69,25 @@ create table SimilarProducts(
 );
 
 create table PGroup(
-	gro_id int not null unique,
-	gro_description varchar(100),
-	primary key(gro_id)
+  gro_id int not null unique,
+  gro_description varchar(100),
+  primary key(gro_id)
 );
 
 create table Category(
-	cat_id int not null unique,
-	cat_description varchar(150),
-	cat_super_cat_id int default null,
-	primary key(cat_id)
+  cat_id int not null unique,
+  cat_description varchar(150),
+  cat_super_cat_id int default null,
+  primary key(cat_id)
 --    foreign key(cat_super_cat_id) references category(cat_id)
 );
 
 create table ProductCategory(
-	pro_cat_cat_id int not null,
-	pro_cat_pro_id int not null,
-	primary key(pro_cat_cat_id, pro_cat_pro_id)
---	foreign key(pro_cat_cat_id) references category(cat_id),
---	foreign key(pro_cat_pro_id) references product(pro_id)
+  pro_cat_cat_id int not null,
+  pro_cat_pro_id int not null,
+  primary key(pro_cat_cat_id, pro_cat_pro_id)
+--  foreign key(pro_cat_cat_id) references category(cat_id),
+--  foreign key(pro_cat_pro_id) references product(pro_id)
 );
 
 create table Review(
@@ -106,3 +107,4 @@ create table Customer(
     primary key(customer_id, customer_sha)
 );
 """
+#BACKUP
