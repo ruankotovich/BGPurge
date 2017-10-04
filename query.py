@@ -19,7 +19,10 @@ class Query():
         FROM (select * from pgroup join product on pro_groupid = gro_id where pro_salesrank > 0) as did
     ) rank_filter where rank <= 10;"""
 
-    SELECT_E = """select pro_title, avg(rev_rating) as ravg, avg(rev_helpful) as havg from review join product p on rev_pro_id = pro_id  group by pro_id, pro_title order by ravg desc, ravg limit 10"""
+    SELECT_E = """select pro_title, avg(rev_rating) as ravg, avg(rev_helpful) as havg 
+from review join product p on rev_pro_id = pro_id
+group by pro_id, pro_title order by ravg desc, ravg desc limit 10"""
+
     SELECT_F = """select cat_id,cat_description, avg(p.ravg) cat_avg from category join productcategory on cat_id = pro_cat_cat_id join  (select p.pro_id,avg(rev_rating) as ravg, avg(rev_helpful) as havg from review  join product p on rev_pro_id = pro_id  group by pro_id) as p on p.pro_id = pro_cat_pro_id group by cat_id,cat_description order by cat_avg desc limit 5;"""
     SELECT_G = """SELECT gro_id, customer_sha, c  FROM (
         SELECT *, 

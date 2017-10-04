@@ -70,9 +70,9 @@ def queryE():
     print("Processando, aguarde... (pode demorar bastante...)")
     cur.execute(Query.SELECT_E)
     recset = cur.fetchall()
-    print("------------------------------------------------------------\nTitle\t\t\t\t\t\t\tRating Average\n------------------------------------------------------------")
+    print("------------------------------------------------------------\nTitle\t\t\t\t\t\t\tRating Average\t\tHelpful Average\n------------------------------------------------------------")
     for rec in recset:
-        print(str(rec[0])+'\t\t\t'+str(rec[1]))
+        print(str(rec[0])+'\t\t\t'+str(rec[1])+'\t'+str(rec[2]))
 
 
 def queryF():

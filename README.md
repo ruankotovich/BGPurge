@@ -21,6 +21,24 @@ A princípio, escolhemos a FN3 para a criação do esquema do banco de dados. Os
 
 ![Dicionario](DiagramaRel.png)
 
+### Restrições de Integridade
+
+Para cada tabela, os atributos referenciados por setas no diagrama relacional representam uma referência de uma restrição de integridade referencial.
+
+- **Product** - possui restrição de integridade referencial com _PGroup_ e de _Category_, já que um produto precisa de um grupo e de uma categoria.
+
+- **SimilarProduct** - possui restrição de integridade com _Product_, já que a similaridade entre produtos só existe quando produtos existem.
+
+- **PGroup** - não possui restrição de integridade referencial direcionada para nenhuma outra relação.
+
+- **Category** - possui restrição de integridade referencial com ela mesma, já que uma categoria pode ter nenhuma ou uma supercategoria.
+
+- **ProductCategory** - possui restrição de integridade referencial com _Category_ e _Product_, já que para referenciar a categoria de um produto, é necessário que exista tanto a categoria à ser referenciada quanto o produto à ser amarrado à categoria.
+
+- **Review** - possui restrição de integridade referencial com _Customer_ e _Product_, já que é necessário um cliente classificando um produto.
+
+- **Customer** - não possui restrição de integridade direcionada para ninguém.
+
 
 ## Consultas do Dashboard
 
@@ -59,7 +77,9 @@ A princípio, escolhemos a FN3 para a criação do esquema do banco de dados. Os
 
 
 ```sql
-    select pro_title, avg(rev_rating) as ravg, avg(rev_helpful) as havg from review join product p on rev_pro_id = pro_id  group by pro_id, pro_title order by ravg desc, ravg limit 10
+    select pro_title, avg(rev_rating) as ravg, avg(rev_helpful) as havg 
+    from review join product p on rev_pro_id = pro_id
+    group by pro_id, pro_title order by ravg desc, ravg desc limit 10
 ``` 
 
 
